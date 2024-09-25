@@ -9,6 +9,20 @@ Net::~Net(void) {
     std::cout << "Net::Net end" << std::endl;
 }
 
+bool Net::chkTensor(at::Tensor tensor)
+{
+    // 检查输出是否位于GPU上
+    if (tensor.is_cuda()) {
+        std::cout << "Output is on GPU." << std::endl;
+        std::cout << "Output shape: " << tensor.sizes() << std::endl; // 显示形状
+        return true;
+    } else {
+        std::cout << "Output is on CPU." << std::endl;
+        return false;
+    }
+    return true;
+}
+
 bool Net::loadNet(){
     std::cout << "Net::loadNet() start" << std::endl;
     try {
@@ -16,7 +30,6 @@ bool Net::loadNet(){
         torch::NoGradGuard no_grad;
 
         try {
-            // Net::module = torch::jit::load("E:/codes/QtCodes/Demo7/model/model_0924.pt");
             Net::module = torch::jit::load("../../model/model_0924.pt");
             std::cout << "Successfully loaded model from " << "model_0924.pt" << std::endl;
         } catch (const c10::Error& e) {
@@ -58,10 +71,6 @@ bool Net::loadNetFromPath(std::string path){
 bool Net::readImage(){
     std::cout << "Net::readImage() start" << std::endl;
     try {
-        // Net::image397u16 = cv::imread("E:/codes/QtCodes/Demo7/image/image397.tiff", CV_16UC1);
-        // Net::image398u16 = cv::imread("E:/codes/QtCodes/Demo7/image/image398.tiff", CV_16UC1);
-        // Net::image399u16 = cv::imread("E:/codes/QtCodes/Demo7/image/image399.tiff", CV_16UC1);
-
         Net::image397u16 = cv::imread("../../image/image397.tiff", CV_16UC1);
         Net::image398u16 = cv::imread("../../image/image398.tiff", CV_16UC1);
         Net::image399u16 = cv::imread("../../image/image399.tiff", CV_16UC1);
@@ -266,5 +275,116 @@ at::Tensor Net::getZernikeFromImage(cv::Mat image397u16, cv::Mat image398u16, cv
 
 
     std::cout << "Net::getZernikeFromImage end" << std::endl;
+    return padded_output;
+}
+
+at::Tensor Net::getZernikeFromImageCuda(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16, int nums) {
+    std::cout << "Net::getZernikeFromImageCuda start" << std::endl;
+
+    auto tensor1 = preprocessImage(image397u16).to(at::kCUDA);
+    auto tensor2 = preprocessImage(image398u16).to(at::kCUDA);
+    auto tensor3 = preprocessImage(image399u16).to(at::kCUDA);
+
+    Net::module.eval();
+    Net::module.to(at::kCUDA);
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(tensor1);
+    // inputs.push_back(tensor2);
+    // inputs.push_back(tensor3);
+
+    for (const auto& ivalue : inputs) {
+        if (ivalue.isTensor()) {
+            const torch::Tensor& tensor = ivalue.toTensor();
+            std::cout << "Inputs shape: " << tensor.sizes() << std::endl;
+        }
+    }
+
+    at::Tensor output = Net::module.forward(inputs).toTensor();
+    std::cout << "Output shape: " << output.sizes() << std::endl; //  [1, 30]
+
+    Net::chkTensor(output);
+
+    auto flat_output = output.reshape({-1}); // -1 表示自动计算该维度的大小
+
+    for (int64_t i = 0; i < flat_output.numel(); ++i) {
+        std::cout << "Element " << i << ": " << flat_output[i].item<float>() << std::endl;
+    }
+
+    // 创建一个形状为 [1, 65] 的全零张量
+    torch::Tensor padded_output = torch::zeros({1, nums}, output.options()); // 保持与 output 相同的 dtype 和 device
+
+    // 将 output 的数据复制到 padded_output 的相应部分
+    padded_output.narrow(1, 0, 30).copy_(output);
+
+    // 输出结果
+    std::cout << "Padded Output shape: " << padded_output.sizes() << std::endl;
+
+    auto flat_padded_output = padded_output.reshape({-1}); // -1 表示自动计算该维度的大小
+
+    for (int64_t i = 0; i < flat_padded_output.numel(); ++i) {
+        std::cout << "Element " << i << ": " << flat_padded_output[i].item<float>() << std::endl;
+    }
+
+    Net::chkTensor(padded_output);
+
+    std::cout << "Net::getZernikeFromImageCuda end" << std::endl;
+    return padded_output;
+}
+
+
+at::Tensor Net::getZernikeFromImageCuda(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16) {
+    std::cout << "Net::getZernikeFromImageCuda start" << std::endl;
+
+    auto tensor1 = preprocessImage(image397u16).to(at::kCUDA);
+    auto tensor2 = preprocessImage(image398u16).to(at::kCUDA);
+    auto tensor3 = preprocessImage(image399u16).to(at::kCUDA);
+
+    Net::chkTensor(tensor1);
+
+    Net::module.eval();
+    Net::module.to(at::kCUDA);
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.push_back(tensor1);
+    // inputs.push_back(tensor2);
+    // inputs.push_back(tensor3);
+
+    for (const auto& ivalue : inputs) {
+        if (ivalue.isTensor()) {
+            const torch::Tensor& tensor = ivalue.toTensor();
+            std::cout << "Inputs shape: " << tensor.sizes() << std::endl;
+        }
+    }
+
+    at::Tensor output = Net::module.forward(inputs).toTensor();
+    std::cout << "Output shape: " << output.sizes() << std::endl; //  [1, 30]
+
+    Net::chkTensor(output);
+
+    auto flat_output = output.reshape({-1}); // -1 表示自动计算该维度的大小
+
+    for (int64_t i = 0; i < flat_output.numel(); ++i) {
+        std::cout << "Element " << i << ": " << flat_output[i].item<float>() << std::endl;
+    }
+
+    // 创建一个形状为 [1, 65] 的全零张量
+    torch::Tensor padded_output = torch::zeros({1, 65}, output.options()); // 保持与 output 相同的 dtype 和 device
+
+    // 将 output 的数据复制到 padded_output 的相应部分
+    padded_output.narrow(1, 0, 30).copy_(output);
+
+    // 输出结果
+    std::cout << "Padded Output shape: " << padded_output.sizes() << std::endl;
+
+    auto flat_padded_output = padded_output.reshape({-1}); // -1 表示自动计算该维度的大小
+
+    for (int64_t i = 0; i < flat_padded_output.numel(); ++i) {
+        std::cout << "Element " << i << ": " << flat_padded_output[i].item<float>() << std::endl;
+    }
+
+    Net::chkTensor(padded_output);
+
+    std::cout << "Net::getZernikeFromImageCuda end" << std::endl;
     return padded_output;
 }

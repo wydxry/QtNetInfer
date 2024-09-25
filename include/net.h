@@ -36,9 +36,13 @@ public:
 
     bool forward(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16);
 
+    bool chkTensor(at::Tensor tensor);
 
     at::Tensor getZernikeFromImage(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16);
     at::Tensor getZernikeFromImage(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16, int nums);
+
+    at::Tensor getZernikeFromImageCuda(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16);
+    at::Tensor getZernikeFromImageCuda(cv::Mat image397u16, cv::Mat image398u16, cv::Mat image399u16, int nums);
 };
 
 #endif // NET_H

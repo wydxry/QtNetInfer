@@ -20,7 +20,6 @@ bool test_opencv()
 {
     std::cout << "test_opencv() start" << std::endl;
     try{
-        // cv::Mat mat = cv::imread("E:/codes/QtCodes/Demo7/image/1.png");
         cv::Mat mat = cv::imread("../../image/1.png");
         if(mat.empty()){
             return false;
@@ -59,7 +58,6 @@ bool test_load_model()
     try{
         torch::NoGradGuard no_grad;
         torch::jit::script::Module module;
-        // module = torch::jit::load("E:/codes/QtCodes/Demo7/model/model_0924.pt");
         module = torch::jit::load("../../model/model_0924.pt");
         std::cout << "Succeed in loading model" << std::endl;
         try{
@@ -97,10 +95,6 @@ bool test_load_model()
 bool test_cv_readimage() {
     std::cout << "test_cv_readimage() start" << std::endl;
     try{
-        // cv::Mat image397u8 = cv::imread("E:/codes/QtCodes/Demo7/image/image397.tiff", CV_16UC1);
-        // cv::Mat image398u8 = cv::imread("E:/codes/QtCodes/Demo7/image/image398.tiff", CV_16UC1);
-        // cv::Mat image399u8 = cv::imread("E:/codes/QtCodes/Demo7/image/image399.tiff", CV_16UC1);
-
         cv::Mat image397u8 = cv::imread("../../image/image397.tiff", CV_16UC1);
         cv::Mat image398u8 = cv::imread("../../image/image398.tiff", CV_16UC1);
         cv::Mat image399u8 = cv::imread("../../image/image399.tiff", CV_16UC1);
@@ -141,6 +135,9 @@ int main(int argc, char *argv[])
     net.forward(net.image397u16, net.image398u16, net.image399u16);
     net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16);  // 65阶
     net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
+
+    net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16);  // 65阶
+    net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
 
     std::cout << "main end" << std::endl;
     return a.exec();
