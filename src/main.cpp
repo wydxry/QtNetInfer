@@ -14,6 +14,8 @@ bool test_cur_path() {
 
 
     std::cout << "test_cur_path() end" << std::endl;
+
+    return true;
 }
 
 bool test_opencv()
@@ -114,11 +116,11 @@ int main(int argc, char *argv[])
     std::cout << "main start" << std::endl;
 
     // 测试必要库
-    test_cur_path(); // test cur path
-    test_opencv(); // test opencv
-    test_libtorch(); // test libtorch
-    test_load_model(); // test load model
-    test_cv_readimage(); // test read image
+    // test_cur_path(); // test cur path
+    // test_opencv(); // test opencv
+    // test_libtorch(); // test libtorch
+    // test_load_model(); // test load model
+    // test_cv_readimage(); // test read image
 
     std::string modelPath = "../../model/model_0924.pt";
 
@@ -128,16 +130,19 @@ int main(int argc, char *argv[])
 
     // 核心
     Net net;
-    net.loadNet(); // 默认路径
-    net.loadNetFromPath(modelPath); // 自定义路径
-    net.readImage();
-    net.readImage(path397, path398, path399);
-    net.forward(net.image397u16, net.image398u16, net.image399u16);
-    net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16);  // 65阶
-    net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
+    // net.loadNet(); // 默认路径
+    // net.loadNetFromPath(modelPath); // 自定义路径
+    // net.readImage();
+    // net.readImage(path397, path398, path399);
+    // net.forward(net.image397u16, net.image398u16, net.image399u16);
+    // net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16);  // 65阶
+    // net.getZernikeFromImage(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
 
-    net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16);  // 65阶
-    net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
+    // net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16);  // 65阶
+    // net.getZernikeFromImageCuda(net.image397u16, net.image398u16, net.image399u16, 75); // 自定义阶数
+
+    // net.getFeatureFromImage();
+    net.testInferTime();
 
     std::cout << "main end" << std::endl;
     return a.exec();
