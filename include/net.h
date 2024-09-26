@@ -29,8 +29,12 @@ public:
     bool loadNet();
     bool loadNetFromPath(std::string path);
 
+    bool testInferTime();
+
     bool readImage();
     bool readImage(std::string path397, std::string path398, std::string path399);
+
+    bool getFeatureFromImage();
 
     torch::Tensor preprocessImage(const cv::Mat& image);
 
